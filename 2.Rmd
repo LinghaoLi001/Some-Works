@@ -1,0 +1,181 @@
+---
+title: '2'
+author: "Hongyi Zhang"
+date: "5/24/2020"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+## 导入数据
+#setwd("C:/Users/zhy92/Desktop/文件/代写工作/2 群号HT2052401 单号1017841024931247769 金额 300")
+df = read.csv("data.csv",encoding="UTF-8",stringsAsFactors = FALSE)
+df
+```
+
+```{r}
+## 删除重复名字
+#install.packages("dplyr")
+#library(dplyr)
+```
+
+```{r}
+##删除重复名字
+df = df[!duplicated(df$X.U.FEFF.name),]
+```
+这里我们删除了数据有重复信息的行，利于更好的整理数据。
+
+```{r}
+df$jia [df$jia == "阳性"] <- 1
+df$jia [df$jia == "阴性"] <- 0
+df$jia <- as.integer(df$jia)
+df$jia
+```
+讲阴性用0代表，阳性用1代表。
+
+```{r}
+##处理缺失值
+df=na.omit(df,na.rm=TRUE)
+```
+
+
+```{r}
+## 设置train和test数据集
+smp_size <- floor(0.75 * nrow(df))
+
+## set the seed to make your partition reproducible
+set.seed(123)
+train_ind <- sample(seq_len(nrow(df)), size = smp_size)
+
+train <- df[train_ind, ]
+test <- df[-train_ind, ]
+
+test
+```
+将数据百分之75用来训练模型，百分之25用来测试模型。
+
+
+1.利用逻辑回归模型。自变量：年龄，因变量：甲
+```{r}
+mylogit <- glm(jia ~ age, data = train,family=binomial,na.action=na.exclude)
+summary(mylogit)
+```
+
+```{r}
+predicted <- predict(mylogit, test, type="response")
+predicted <- ifelse(predicted > 0.5,1,0)
+misClasificError <- mean(predicted != test$jia)
+print(paste('Accuracy',1-misClasificError))
+
+age=c(23, 21, 44)
+data=data.frame(age)
+predicted2=predict(mylogit, data, type="response")
+predicted2
+```
+
+
+2.利用逻辑回归模型。自变量：年龄，因变量：乙
+```{r}
+df=na.omit(df,na.rm=TRUE)
+df$yi [df$yi == "阳性"] <- 1
+df$yi [df$yi == "阴性"] <- 0
+df$yi <- as.integer(df$yi)
+df$yi
+
+
+```
+
+```{r}
+## 设置train和test数据集
+smp_size <- floor(0.75 * nrow(df))
+
+## set the seed to make your partition reproducible
+set.seed(123)
+train_ind <- sample(seq_len(nrow(df)), size = smp_size)
+
+train <- df[train_ind, ]
+test <- df[-train_ind, ]
+```
+
+```{r}
+mylogit2 <- glm(yi ~ age, data = train,family=binomial,na.action=na.exclude)
+summary(mylogit2)
+```
+
+```{r}
+predicted2 <- predict(mylogit2, test, type="response")
+predicted2 <- ifelse(predicted2 > 0.5,1,0)
+misClasificError2 <- mean(predicted2 != test$yi)
+print(paste('Accuracy',1-misClasificError2))
+
+age=c(1, 23, 21, 44,55, 60,80, 79)
+data=data.frame(age)
+predicted3=predict(mylogit2, data, type="response")
+predicted3
+```
+
+
+```{r}
+#df$area
+df2=df[df[, "area"] == "急诊科",]
+df3=df[df[, "area"] == "发热门诊",]
+df4=df[df[, "area"] == "呼吸科门诊",]
+total <- rbind(df2,df3,df4)
+#total
+
+```
+
+```{r}
+total$area [total$area == "急诊科"] <- 1
+total$area [total$area == "发热门诊"] <- 2
+total$area [total$area == "呼吸科门诊"] <- 3
+total
+```
+
+```{r}
+## 设置train和test数据集
+smp_size <- floor(0.75 * nrow(total))
+
+## set the seed to make your partition reproducible
+set.seed(123)
+train_ind <- sample(seq_len(nrow(total)), size = smp_size)
+
+train2 <- total[train_ind, ]
+test2 <- total[-train_ind, ]
+```
+
+```{r}
+mylogit3 <- glm(jia ~ area, data = train2,family=binomial)
+summary(mylogit3)
+```
+```{r}
+predicted3 <- predict(mylogit3, test2, type="response")
+predicted3 <- ifelse(predicted3 > 0.5,1,0)
+misClasificError3 <- mean(predicted3 != test2$jia)
+print(paste('Accuracy',1-misClasificError3))
+```
+
+```{r}
+mylogit4 <- glm(yi ~ area, data = train2,family=binomial)
+summary(mylogit4)
+```
+
+```{r}
+predicted4 <- predict(mylogit4, test2, type="response")
+predicted4 <- ifelse(predicted4 > 0.5,1,0)
+misClasificError4 <- mean(predicted3 != test2$yi)
+print(paste('Accuracy',1-misClasificError4))
+```
+
+```{r}
+testt=c(1,2,3)
+data2=data.frame(testt)
+predicted33=predict(mylogit3, data=data2, type="response")
+predicted33
+```
+

@@ -1,0 +1,311 @@
+---
+title: 'code'
+author: "Hongyi Zhang"
+date: "6/3/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Import data file
+成都数据
+```{r}
+df_CD=read.csv("C:\\Users\\zhy92\\Desktop\\文件\\work\\3\\data\\ChengduPM20100101_20151231.csv")
+df_CD
+sum(is.na(df_CD))
+```
+
+清理NA数据,NA数据量过大，成无规律mssing,所以直接选择忽略NA值
+```{r}
+df_CD_clean=na.omit(df_CD)
+
+df_CD_clean
+#is.na(df_CD_clean)
+```
+
+```{r}
+#install.packages("ggplot2")
+```
+
+
+
+可视化，选取因变量PM_Caotangsi,PM_Shahepu,PM_US.post，根据DEWP,HUMI,PRES,TEMP,Iws,precipitation,Iprec 这七个连续个变量分别作图分析
+
+
+y=PM_Caotangsi:
+```{r}
+## x=DEWP, y=PM_Caotangsi
+library(ggplot2)
+# Change the point size, and shape
+ggplot(df_CD_clean, aes(x=DEWP, y=PM_Caotangsi)) + geom_point(size=2, shape=23)
+ggplot(df_CD_clean, aes(x=HUMI, y=PM_Caotangsi)) + geom_point(size=2, shape=23)
+ggplot(df_CD_clean, aes(x=PRES, y=PM_Caotangsi)) + geom_point(size=2, shape=23)
+ggplot(df_CD_clean, aes(x=TEMP, y=PM_Caotangsi)) + geom_point(size=2, shape=23)
+ggplot(df_CD_clean, aes(x=Iws, y=PM_Caotangsi)) + geom_point(size=2, shape=23)
+ggplot(df_CD_clean, aes(x=precipitation, y=PM_Caotangsi)) + geom_point(size=2, shape=23)
+ggplot(df_CD_clean, aes(x=Iprec, y=PM_Caotangsi)) + geom_point(size=2, shape=23)
+```
+
+y=PM_Shahepu, x=DEWP,HUMI,PRES,TEMP,Iws,precipitation,Iprec
+```{r}
+ggplot(df_CD_clean, aes(x=DEWP, y=PM_Shahepu)) + geom_point(size=2, shape=23)
+ggplot(df_CD_clean, aes(x=HUMI, y=PM_Shahepu)) + geom_point(size=2, shape=23)
+ggplot(df_CD_clean, aes(x=PRES, y=PM_Shahepu)) + geom_point(size=2, shape=23)
+ggplot(df_CD_clean, aes(x=TEMP, y=PM_Shahepu)) + geom_point(size=2, shape=23)
+ggplot(df_CD_clean, aes(x=Iws, y=PM_Shahepu)) + geom_point(size=2, shape=23)
+ggplot(df_CD_clean, aes(x=precipitation, y=PM_Shahepu)) + geom_point(size=2, shape=23)
+ggplot(df_CD_clean, aes(x=Iprec, y=PM_Shahepu)) + geom_point(size=2, shape=23)
+```
+
+y=PM_US.Post, x=DEWP,HUMI,PRES,TEMP,Iws,precipitation,Iprec
+```{r}
+ggplot(df_CD_clean, aes(x=DEWP, y=PM_US.Post)) + geom_point(size=2, shape=23)
+ggplot(df_CD_clean, aes(x=HUMI, y=PM_US.Post)) + geom_point(size=2, shape=23)
+ggplot(df_CD_clean, aes(x=PRES, y=PM_US.Post)) + geom_point(size=2, shape=23)
+ggplot(df_CD_clean, aes(x=TEMP, y=PM_US.Post)) + geom_point(size=2, shape=23)
+ggplot(df_CD_clean, aes(x=Iws, y=PM_US.Post)) + geom_point(size=2, shape=23)
+ggplot(df_CD_clean, aes(x=precipitation, y=PM_US.Post)) + geom_point(size=2, shape=23)
+ggplot(df_CD_clean, aes(x=Iprec, y=PM_US.Post)) + geom_point(size=2, shape=23)
+```
+
+```{r}
+#install.packages("mlbench")
+#install.packages("caret")
+```
+
+
+```{r}
+set.seed(7)
+# load the library
+library(mlbench)
+library(caret)
+# prepare training scheme
+control <- trainControl(method="repeatedcv", number=10, repeats=3)
+# train the model
+model <- train(PM_Caotangsi~DEWP+HUMI+PRES+TEMP+Iws+precipitation+Iprec, df_CD_clean, method="lm", preProcess="scale", trControl=control)
+# estimate variable importance
+importance <- varImp(model, scale=FALSE)
+print (model)
+plot(importance)
+```
+
+线性回归运用 x=Iws 和x=PRES
+```{r}
+# prepare training scheme
+control <- trainControl(method="repeatedcv", number=10, repeats=3)
+# train the model
+model <- train(PM_Caotangsi~Iws, df_CD_clean, method="lm", preProcess="scale", trControl=control)
+print(model)
+print(model$finalModel)
+```
+
+plot linear regression model for y=PM_Caotangsi, x=Iws
+```{r}
+plot(df_CD_clean$Iws, df_CD_clean$PM_Caotangsi, pch = 23, cex = 2, col = "red", xlab = "Iws", ylab = "PM_Caotangsi")
+abline(abline(lm(df_CD_clean$PM_Caotangs ~ df_CD_clean$Iws)))
+```
+
+```{r}
+# prepare training scheme
+control <- trainControl(method="repeatedcv", number=10, repeats=3)
+# train the model
+model <- train(PM_Caotangsi~PRES, df_CD_clean, method="lm", preProcess="scale", trControl=control)
+print(model)
+print(model$finalModel)
+```
+
+```{r}
+plot(df_CD_clean$PRES, df_CD_clean$PM_Caotangsi, pch = 23, cex = 2, col = "red", xlab = "PRES", ylab = "PM_Caotangsi")
+abline(abline(lm(df_CD_clean$PM_Caotangs ~ df_CD_clean$PRES)))
+```
+
+非线性回归 y=PM_Caotangsi, x=Iws
+```{r}
+# prepare training scheme
+control <- trainControl(method="repeatedcv", number=10, repeats=3)
+# train the model
+model2 <- train(PM_Caotangsi~poly(Iws,2,raw=TRUE), df_CD_clean, method="lm", preProcess="scale", trControl=control)
+print(model2)
+print(model2$finalModel)
+```
+
+
+```{r}
+fit2=lm(PM_Caotangsi~poly(Iws,2,raw=TRUE),data= df_CD_clean)
+summary(fit2)
+```
+
+```{r}
+#quadratic = fit2$coefficient[3]*df_CD_clean$Iws^2 + fit2$coefficient[2]*df_CD_clean$Iws + fit2$coefficient[1]
+#quadratic
+```
+
+```{r}
+plot(df_CD_clean$Iws, df_CD_clean$PM_Caotangsi, pch = 23, cex = 2, col = "red", xlab = "Iws", ylab = "PM_Caotangsi")
+plot(df_CD_clean$Iws,quadratic)
+```
+
+```{r}
+#install.packages("tree")
+```
+
+
+```{r}
+set.seed(1)q
+train <- sample(1:nrow(df_CD_clean), nrow(df_CD_clean)/2)
+testdat  <- df_CD_clean[-train]
+```
+
+Regression Tree with only PRES and Iws
+```{r}
+library(tree)
+tree.model <- tree(PM_Caotangsi~PRES+Iws, data=df_CD_clean, mindev=0.001)
+plot(tree.model)
+text(tree.model, cex=.75)
+summary(tree.model)
+```
+
+```{r}
+cv.df <- cv.tree(tree.model)
+plot(cv.df$size, cv.df$dev, type = "b")
+```
+
+修剪树叶
+```{r}
+prune.df <- prune.tree(tree.model, best = 6)
+plot(prune.df)
+text(prune.df, pretty = 0)
+```
+
+RMSE
+```{r}
+yhat <- predict(tree.model, newdata = df_CD_clean)
+actual <- df_CD_clean$PM_Caotangsi
+sqrt(mean((yhat-actual)^2))
+```
+
+```{r}
+tree.model2 <- tree(PM_Caotangsi~DEWP+HUMI+PRES+TEMP+Iws+precipitation+Iprec, data=df_CD_clean,mindev=0.005)
+plot(tree.model2)
+text(tree.model2, cex=.75)
+summary(tree.model2)
+```
+
+```{r}
+cv.df <- cv.tree(tree.model2)
+plot(cv.df$size, cv.df$dev, type = "b")
+```
+
+```{r}
+prune.df <- prune.tree(tree.model2, best = 6)
+plot(prune.df)
+text(prune.df, pretty = 0)
+```
+
+```{r}
+yhat <- predict(tree.model2, newdata = testdat)
+actual <- testdat$medv
+plot(yhat, actual)
+abline(0,1)
+```
+
+RMSE
+```{r}
+yhat <- predict(tree.model2, newdata = df_CD_clean)
+actual <- df_CD_clean$PM_Caotangsi
+sqrt(mean((yhat-actual)^2))
+```
+
+北京数据
+```{r}
+df_BJ=read.csv("C:\\Users\\zhy92\\Desktop\\文件\\work\\3\\data\\BeijingPM20100101_20151231.csv")
+#df_BJ
+df_BJ_clean=na.omit(df_BJ)
+df_BJ_clean
+```
+
+```{r}
+df_SH=read.csv("C:\\Users\\zhy92\\Desktop\\文件\\work\\3\\data\\ShanghaiPM20100101_20151231.csv")
+#df_BJ
+df_SH_clean=na.omit(df_SH)
+df_SH_clean
+```
+
+北京散点图
+```{r}
+ggplot(df_BJ_clean, aes(x=DEWP, y=PM_Dongsi)) + geom_point(size=2, shape=23)
+ggplot(df_BJ_clean, aes(x=HUMI, y=PM_Dongsi)) + geom_point(size=2, shape=23)
+ggplot(df_BJ_clean, aes(x=PRES, y=PM_Dongsi)) + geom_point(size=2, shape=23)
+ggplot(df_BJ_clean, aes(x=TEMP, y=PM_Dongsi)) + geom_point(size=2, shape=23)
+ggplot(df_BJ_clean, aes(x=Iws, y=PM_Dongsi)) + geom_point(size=2, shape=23)
+ggplot(df_BJ_clean, aes(x=precipitation, y=PM_Dongsi)) + geom_point(size=2, shape=23)
+ggplot(df_BJ_clean, aes(x=Iprec, y=PM_Dongsi)) + geom_point(size=2, shape=23)
+```
+
+上海散点图
+```{r}
+ggplot(df_SH_clean, aes(x=DEWP, y=PM_Jingan)) + geom_point(size=2, shape=23)
+ggplot(df_SH_clean, aes(x=HUMI, y=PM_Jingan)) + geom_point(size=2, shape=23)
+ggplot(df_SH_clean, aes(x=PRES, y=PM_Jingan)) + geom_point(size=2, shape=23)
+ggplot(df_SH_clean, aes(x=TEMP, y=PM_Jingan)) + geom_point(size=2, shape=23)
+ggplot(df_SH_clean, aes(x=Iws, y=PM_Jingan)) + geom_point(size=2, shape=23)
+ggplot(df_SH_clean, aes(x=precipitation, y=PM_Jingan)) + geom_point(size=2, shape=23)
+ggplot(df_SH_clean, aes(x=Iprec, y=PM_Jingan)) + geom_point(size=2, shape=23)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
